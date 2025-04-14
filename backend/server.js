@@ -30,13 +30,11 @@ const empruntRoutes = require('./routes/emprunt');
 
 
 
-
 app.use('/api/login', loginRoute);
 app.use('/api/register', registerRoute);
 app.use('/api/auth', auth);
 app.use('/api/administrateur', adminRoute);
 app.use('/api/emprunt', empruntRoutes);
-
 
 // Gestion d'erreur globale
 app.use((err, req, res, next) => {
