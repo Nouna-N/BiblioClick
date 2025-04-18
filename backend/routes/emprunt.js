@@ -157,51 +157,54 @@ router.post('/:bookId', auth, async (req, res) => {
     }
   });
   
-  // Route pour obtenir tous les emprunts d'un utilisateur
-  router.get('/mes-emprunts', auth, (req, res) => {
-    try {
-      const userId = req.user.id;
-      
-      db.query(
-        `SELECT e.id, e.date_emprunt, e.date_retour_prevue, e.date_retour_effective, e.status,
-         l.id as livre_id, l.titre, l.auteur, l.image, l.isbn 
-         FROM emprunts e 
-         JOIN books l ON e.livre_id = l.id 
-         WHERE e.utilisateur_id = ? 
-         ORDER BY e.date_emprunt DESC`,
-        [userId],
-        function(err, results) {
-          if (err) {
-            console.error('Erreur lors de la récupération des emprunts:', err);
-            return res.status(500).json({ error: 'Erreur lors de la récupération des emprunts' });
-          }
-          
-          // Formater les données pour les renvoyer au client
-          const emprunts = results.map(emprunt => {
-            return {
-              id: emprunt.id,
-              dateEmprunt: emprunt.date_emprunt,
-              dateRetourPrevue: emprunt.date_retour_prevue,
-              dateRetourEffective: emprunt.date_retour_effective,
-              status: emprunt.status,
-              livre: {
-                id: emprunt.livre_id,
-                titre: emprunt.titre,
-                auteur: emprunt.auteur,
-                image: emprunt.image,
-                isbn: emprunt.isbn
-              }
-            };
-          });
-          
-          res.status(200).json(emprunts);
+// Route pour obtenir tous les emprunts d'un utilisateur
+router.get('/mes-emprunts', auth, (req, res) => {
+  try {
+    const userId = req.user.id;
+    // Obtenir l'URL de base à partir de la requête
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    
+    db.query(
+      `SELECT e.id, e.date_emprunt, e.date_retour_prevue, e.date_retour_effective, e.status,
+       l.id as livre_id, l.titre, l.auteur, l.image, l.isbn 
+       FROM emprunts e 
+       JOIN books l ON e.livre_id = l.id 
+       WHERE e.utilisateur_id = ? 
+       ORDER BY e.date_emprunt DESC`,
+      [userId],
+      function(err, results) {
+        if (err) {
+          console.error('Erreur lors de la récupération des emprunts:', err);
+          return res.status(500).json({ error: 'Erreur lors de la récupération des emprunts' });
         }
-      );
-    } catch (error) {
-      console.error('Erreur lors de la récupération des emprunts:', error);
-      res.status(500).json({ error: 'Erreur lors de la récupération des emprunts' });
-    }
-  });
+        
+        // Formater les données pour les renvoyer au client
+        const emprunts = results.map(emprunt => {
+          return {
+            id: emprunt.id,
+            dateEmprunt: emprunt.date_emprunt,
+            dateRetourPrevue: emprunt.date_retour_prevue,
+            dateRetourEffective: emprunt.date_retour_effective,
+            status: emprunt.status,
+            livre: {
+              id: emprunt.livre_id,
+              titre: emprunt.titre,
+              auteur: emprunt.auteur,
+              // Transformer les chemins relatifs en URLs complètes
+              image: emprunt.image ? `${baseUrl}${emprunt.image}` : null,
+              isbn: emprunt.isbn
+            }
+          };
+        });
+        
+        res.status(200).json(emprunts);
+      }
+    );
+  } catch (error) {
+    console.error('Erreur lors de la récupération des emprunts:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des emprunts' });
+  }
+});
   
   // Route pour retourner un livre
   router.post('/retour/:empruntId', auth, (req, res) => {
