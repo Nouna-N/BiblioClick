@@ -1,12 +1,8 @@
-// backend/utils/mailer.js
 
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-console.log("MAIL_USER:", process.env.MAIL_USER);
-console.log("MAIL_PASS:", process.env.MAIL_PASS ? '✔️ présent' : '❌ manquant');
 
-console.log("MAIL_USER:", process.env.MAIL_USER); // à supprimer après test
-console.log("MAIL_PASS:", process.env.MAIL_PASS ? "****" : "MISSING"); // à supprimer après test
+
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
